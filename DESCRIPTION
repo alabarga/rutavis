@@ -1,0 +1,9 @@
+Package: dlvis
+Title: Visualization of Deep Learning Techniques
+Version: 0.0.0.9000
+Authors@R: person("David", "Charte", email = "fdavidcl@outlook.com", role = c("aut", "cre"))
+Description: What the package does (one paragraph).
+Depends: R (>= 3.1.0)
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
