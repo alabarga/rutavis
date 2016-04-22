@@ -21,7 +21,9 @@ shinyServer(function(input, output, session) {
   })
 
   observe({
-    updateSelectInput(session, "class_pos", choices = 1:length(dataset()))
+    attributes <- 1:length(dataset())
+    names(attributes) <- paste(attributes, "-", names(dataset()))
+    updateSelectInput(session, "class_pos", choices = attributes)
 
     updateSelectInput(session, "left_activation", choices = c("RectifierWithDropout", "Tanh"))
     updateSelectInput(session, "right_activation", choices = c("RectifierWithDropout", "Tanh"))
@@ -29,16 +31,16 @@ shinyServer(function(input, output, session) {
 
   output$left_plot <- renderPlot({
     if (!is.null(dataset())) {
-      print(input$class_pos)
-      dlmodel <- newModel.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = 2, activation = input$left_activation, epoch_num = input$left_epochs, name = "a")
-      plot.dlmodel(dlmodel)
+      layers <- sapply(1:input$left_layer_count, function(i) input[[paste0("left_layer", i)]])
+      dlmodel <- newModel.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$left_activation, epoch_num = input$left_epochs, name = "")
+      plot(dlmodel)
     }
   })
   output$right_plot <- renderPlot({
     if (!is.null(dataset())) {
-      print(input$class_pos)
-      dlmodel <- newModel.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = 2, activation = input$right_activation, epoch_num = input$right_epochs, name = "a")
-      plot.dlmodel(dlmodel)
+      layers <- sapply(1:input$right_layer_count, function(i) input[[paste0("right_layer", i)]])
+      dlmodel <- newModel.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$right_activation, epoch_num = input$right_epochs, name = "")
+      plot(dlmodel)
     }
   })
 

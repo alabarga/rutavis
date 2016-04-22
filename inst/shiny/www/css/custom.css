@@ -1,5 +1,5 @@
 * {
-  font-family: Lato, Open Sans, sans-serif !important;
+  font-family: Fira Sans, Lato, Open Sans, sans-serif !important;
 }
 
 body {
@@ -33,6 +33,7 @@ body {
 
   .dataset-name {
     font-weight: bold;
+    margin-right: 1.2em;
   }
 
   .plot {
@@ -48,6 +49,9 @@ body {
       color: #505050;
       font-size: 0.9em;
     }
+      form label.pure-button {
+        margin: 0;
+      }
     form .small-input {
       width: 4em;
       font-size: 0.8em;
@@ -65,7 +69,7 @@ body {
       vertical-align: middle;
     }
     form .mini-button {
-      padding: .5em .6em;
+      padding: .3em .6em;
       font-size: 0.8em;
     }
     form .pure-button-remove {
