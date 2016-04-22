@@ -15,6 +15,10 @@ newModel.autoencoder <- function(dataset, class_col = length(dataset), layer, ac
     stop("dlvis: Package 'h2o' is not installed and is needed for autoencoder functionality")
   }
 
+  print(class_col)
+
+  h2o::h2o.init()
+
   dataset.h2o <- h2o::as.h2o(dataset)
 
   inputs <- 1:(ncol(dataset)-1)
@@ -62,6 +66,6 @@ newModel.autoencoder <- function(dataset, class_col = length(dataset), layer, ac
     classes = dataset[class_col],
     name = name
   )
-  class(dlmodel) <- dlmodel
+  class(dlmodel) <- "dlmodel"
   dlmodel
 }
