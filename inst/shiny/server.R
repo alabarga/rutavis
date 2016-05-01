@@ -3,10 +3,17 @@ library(foreign)
 library(dlvis)
 
 shinyServer(function(input, output, session) {
-  type_options <- list()
+  PCA <- "pca"
+  AUTOENCODER <- "autoencoder"
+  RBM <- "rbm"
+
+  type_options <- list(PCA)
 
   if ("h2o" %in% rownames(installed.packages()))
-    type_options <- c(type_options, "autoencoder")
+    type_options <- c(type_options, AUTOENCODER)
+
+  if ("darch" %in% rownames(installed.packages()))
+    type_options <- c(type_options, RBM)
 
   updateSelectInput(session, "left_type", choices = type_options, selected = type_options[[1]])
   updateSelectInput(session, "right_type", choices = type_options, selected = type_options[[1]])
@@ -32,15 +39,27 @@ shinyServer(function(input, output, session) {
   output$left_plot <- renderPlot({
     if (!is.null(dataset())) {
       layers <- sapply(1:input$left_layer_count, function(i) input[[paste0("left_layer", i)]])
-      dlmodel <- newModel.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$left_activation, epoch_num = input$left_epochs, name = "")
-      plot(dlmodel)
+
+      dlmodel <-
+        if (input$left_type == AUTOENCODER)
+          newModel.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$left_activation, epoch_num = input$left_epochs, name = "")
+        else# if (input$left_type == PCA)
+          newModel.pca(dataset(), class_col = as.numeric(input$class_pos), dimensions = input$left_dimensions, name = "")
+
+      plot.dlmodel(dlmodel)
     }
   })
   output$right_plot <- renderPlot({
     if (!is.null(dataset())) {
       layers <- sapply(1:input$right_layer_count, function(i) input[[paste0("right_layer", i)]])
-      dlmodel <- newModel.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$right_activation, epoch_num = input$right_epochs, name = "")
-      plot(dlmodel)
+
+      dlmodel <-
+        if (input$right_type == AUTOENCODER)
+          newModel.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$right_activation, epoch_num = input$right_epochs, name = "")
+        else# if (input$left_type == PCA)
+          newModel.pca(dataset(), class_col = as.numeric(input$class_pos), dimensions = input$right_dimensions, name = "")
+
+      plot.dlmodel(dlmodel)
     }
   })
 

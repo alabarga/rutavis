@@ -45,6 +45,18 @@ body {
   form {
 
   }
+    form .pca-settings, .autoencoder-settings, .rbm-settings {
+      display: none;
+    }
+    form.active-pca .pca-settings {
+      display: block;
+    }
+    form.active-autoencoder .autoencoder-settings {
+      display: block;
+    }
+    form.active-rbm .rbm-settings {
+      display: block;
+    }
     form label {
       color: #505050;
       font-size: 0.9em;
@@ -78,7 +90,7 @@ body {
 
   footer {
     margin-top: 1em;
-    padding-top: 1em;
+    padding: 1em 0 2em;
     border-top: 1px solid #ccc;
 
     font-size: 0.85em;
