@@ -1,13 +1,13 @@
-#
-#
+#' @import graphics
 plot2d <- function(model, classes, name) {
   classes <- as.factor(unlist(classes))
-  plot(as.matrix(model), col = classes)
-  legend(7, 4.3, unique(classes), col=1:length(classes), pch=1)
+  graphics::plot(as.matrix(model), col = classes)
+  graphics::legend(7, 4.3, unique(classes), col=1:length(classes), pch=1)
 }
 
+#' @import scatterplot3d
 plot3d <- function(model, classes, name) {
-  scatterplot3d(
+  scatterplot3d::scatterplot3d(
     as.matrix(model),
     color = as.numeric(as.factor(unlist(classes)))
   )

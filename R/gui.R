@@ -1,3 +1,4 @@
+#' @import foreign
 #' @export
 start_gui <- function() {
   if (!requireNamespace("shiny", quietly = TRUE)) {
