@@ -10,6 +10,7 @@
 #-------------------------------------------------------------------------------
 # Functions
 #-------------------------------------------------------------------------------
+#' @export
 newModel.autoencoder <- function(dataset, class_col = length(dataset), layer, activation, epoch_num, name) {
   if (!requireNamespace("h2o", quietly = TRUE)) {
     stop("dlvis: Package 'h2o' is not installed and is needed for autoencoder functionality")
