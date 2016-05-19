@@ -18,7 +18,7 @@ newModel.autoencoder <- function(dataset, class_col = length(dataset), layer, ac
 
   print(class_col)
 
-  h2o::h2o.init()
+  h2o::h2o.init(nthreads = -1)
 
   dataset.h2o <- h2o::as.h2o(dataset)
 
@@ -53,10 +53,10 @@ newModel.autoencoder <- function(dataset, class_col = length(dataset), layer, ac
     )
 
     #save(ae_model, file = rdaname)
-    h2o::h2o.saveModel(ae_model, path = "save")
-    savename <- ae_model@model_id
-    save(savename, file = rdaname)
-    cat(paste0(savename, "\n"))
+    # h2o::h2o.saveModel(ae_model, path = "save")
+    # savename <- ae_model@model_id
+    # save(savename, file = rdaname)
+    # cat(paste0(savename, "\n"))
   # }
   #str(ae_model)
 
