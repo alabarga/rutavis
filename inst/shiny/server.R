@@ -42,9 +42,9 @@ shinyServer(function(input, output, session) {
 
       dlmodel <-
         if (input$left_type == AUTOENCODER)
-          newModel.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$left_activation, epoch_num = input$left_epochs, name = "")
+          new_model.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$left_activation, epoch_num = input$left_epochs, name = "")
         else# if (input$left_type == PCA)
-          newModel.pca(dataset(), class_col = as.numeric(input$class_pos), dimensions = input$left_dimensions, name = "")
+          new_model.pca(dataset(), class_col = as.numeric(input$class_pos), dimensions = input$left_dimensions, name = "")
 
       plot.dlmodel(dlmodel)
     }
@@ -55,9 +55,9 @@ shinyServer(function(input, output, session) {
 
       dlmodel <-
         if (input$right_type == AUTOENCODER)
-          newModel.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$right_activation, epoch_num = input$right_epochs, name = "")
+          new_model.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$right_activation, epoch_num = input$right_epochs, name = "")
         else# if (input$left_type == PCA)
-          newModel.pca(dataset(), class_col = as.numeric(input$class_pos), dimensions = input$right_dimensions, name = "")
+          new_model.pca(dataset(), class_col = as.numeric(input$class_pos), dimensions = input$right_dimensions, name = "")
 
       plot.dlmodel(dlmodel)
     }

@@ -1,5 +1,5 @@
 #' @export
-newModel.pca <- function(dataset, class_col = length(dataset), dimensions, name, ...) {
+new_model.pca <- function(dataset, class_col = length(dataset), dimensions, name, ...) {
   inputs <- dataset[-class_col]
 
   if (!all(sapply(inputs, function(col) "numeric" %in% class(col))))

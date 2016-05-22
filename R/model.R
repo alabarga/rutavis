@@ -1,9 +1,9 @@
 #' @export
-newModel <- function(type, ...) {
+new_model <- function(type, ...) {
   funcs <- list(
-    pca = dlvis::newModel.pca,
-    autoencoder = dlvis::newModel.autoencoder,
-    rbm = dlvis::newModel.rbm
+    pca = dlvis::new_model.pca,
+    autoencoder = dlvis::new_model.autoencoder,
+    rbm = dlvis::new_model.rbm
   )
 
   funcs[[type]](...)

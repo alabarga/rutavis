@@ -101,7 +101,7 @@ main <- function() {
 
       for (activation in config$activations) {
         for (epoch_num in config$epochs) {
-          plot(newModel.autoencoder(dataset, class_col, layer, activation, epoch_num, name))
+          plot(new_model.autoencoder(dataset, class_col, layer, activation, epoch_num, name))
         } # epochs
       } # activations
     } # layers
