@@ -1,21 +1,25 @@
-#-------------------------------------------------------------------------------
-# TODO
-#-------------------------------------------------------------------------------
-# [ ] Download actual arrhythmia dataset
-# [ ] Use / partition mnist
-# [X] Save generated models as Rdata
-# [ ] Compose animated gifs out of graphics
-# [ ] Everything with RBMs
-
+#!/usr/bin/env Rscript
 #-------------------------------------------------------------------------------
 # Dependencies
 #-------------------------------------------------------------------------------
-library(dlvis)
+#library(dlvis)
+library(foreign)
+devtools::load_all()
 
 #-------------------------------------------------------------------------------
 # Configuration
 #-------------------------------------------------------------------------------
+set.seed(10897)
+
 data(iris)
+mnist_file <- "experiments/mnist_subset.rda"
+if (!file.exists(mnist_file)) {
+  mnist <- read.arff("experiments/mnist_test.arff")
+  mnist_subset <- mnist[sample(1:10000, 1000), ]
+  save(mnist_subset, file = mnist_file)
+}
+load(mnist_file)
+
 config <- list(
 
   datasets = list(
@@ -39,11 +43,16 @@ config <- list(
     #   format = "arff",
     #   class_col = -1
     # ),
+    # list(
+    #   name = "iris",
+    #   frame = iris,
+    #   class_col = -1
+    # ),
     list(
-      name = "iris",
-      frame = iris,
+      name = "mnist",
+      frame = mnist_subset,
       class_col = -1
-    )
+      )
   ),
 
   layers = list(
@@ -54,11 +63,12 @@ config <- list(
     c(1.5, 3, 1.5),
     c(1.5, 1, 2, 1, 1.5),
     c(1.5, 1, 3, 1, 1.5)
+    #c(1.5, 1, 0.5, 0.25, 3, 0.25, 0.5, 1, 1.5)
   ),
 
   activations = c(
-    "Tanh",
-    "RectifierWithDropout"
+    "TanhWithDropout"
+    #"RectifierWithDropout"
   ),
 
   epochs = c(
@@ -69,41 +79,54 @@ config <- list(
   )
 )
 
-#-------------------------------------------------------------------------------
-# Main script
-#-------------------------------------------------------------------------------
-main <- function() {
-  set.seed(10897)
-  h2o.server <- h2o.init(nthreads = -1)
-
-  for (ds in config$datasets) {
-
-    filename <- paste0("data/", ds$name)
-    dataset <- if (class(ds$frame) == "data.frame")
-        ds$frame
-      else if (ds$format == "csv")
-        read.csv(filename, header = FALSE)
-      else if (ds$format == "arff")
-        read.arff(filename)
-      else
-        error("Invalid format")
-
-    name <- if (class(ds$name) == "character")
-        ds$name
-      else
-        substitute(dataset)
-
-    class_col <- ifelse(ds$class_col < 1, length(dataset), ds$class_col)
-
-    for (layer in config$layers) {
-
-      layer <- ifelse(layer < 2, round(layer * length(dataset)), layer)
-
-      for (activation in config$activations) {
-        for (epoch_num in config$epochs) {
-          plot(new_model.autoencoder(dataset, class_col, layer, activation, epoch_num, name))
-        } # epochs
-      } # activations
-    } # layers
-  } # datasets
+readDatasetConfig <- function(ds) {
+  filename <- paste0("experiments/", ds$name)
+  if (class(ds$frame) == "data.frame")
+      ds$frame
+    else if (ds$format == "csv")
+      read.csv(filename, header = FALSE)
+    else if (ds$format == "arff")
+      read.arff(filename)
+    else
+      error("Invalid format")
 }
+
+for (ds in config$datasets) {
+  dataset <- readDatasetConfig(ds)
+
+  name <- if (class(ds$name) == "character")
+      ds$name
+    else
+      substitute(dataset)
+
+  class_col <- ifelse(ds$class_col < 1, length(dataset), ds$class_col)
+
+  for (layer in config$layers) {
+
+    layer <- ifelse(layer < 2, round(layer * length(dataset)), layer)
+
+    for (activation in config$activations) {
+      for (epoch_num in config$epochs) {
+        basename <- paste0(name, "_", activation, "_", paste0(layer, collapse = "_"), "_", epoch_num, "epochs")
+        pngname <- paste0("experiments/out/", basename, ".png")
+        cat(paste0(pngname, "\n"))
+
+        tryCatch({
+          themodel <- new_model.autoencoder(dataset, class_col, layer, activation, epoch_num, name)
+
+          png(pngname)
+          plot(themodel)
+          dev.off()
+        }, error = { cat("Couldn't train this autoencoder") })
+      } # epochs
+    } # activations
+  } # layers
+
+  # pca
+  png(paste0("experiments/out/", name, "_pca2.png"))
+  plot(new_model.pca(dataset, class_col, 2, name))
+  dev.off()
+  png(paste0("experiments/out/", name, "_pca3.png"))
+  plot(new_model.pca(dataset, class_col, 3, name))
+  dev.off()
+} # datasets
