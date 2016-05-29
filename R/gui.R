@@ -2,10 +2,10 @@
 #' @export
 start_gui <- function() {
   if (!requireNamespace("shiny", quietly = TRUE)) {
-    stop("dlvis: Package 'shiny' is required to start the GUI")
+    stop("dlvisR: Package 'shiny' is required to start the GUI")
   }
 
-  shiny::runApp(appDir = system.file("shiny", package = "dlvis"), launch.browser = TRUE)
+  shiny::runApp(appDir = system.file("shiny", package = "dlvisR"), launch.browser = TRUE)
 
   invisible()
 }

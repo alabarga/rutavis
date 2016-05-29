@@ -1,4 +1,4 @@
-Package: dlvis
+Package: dlvisR
 Title: Visualization of Deep Learning Techniques
 Version: 0.0.0.9000
 Authors@R: person("David", "Charte", email = "fdavidcl@outlook.com", role = c("aut", "cre"))

@@ -1,6 +1,6 @@
 library(shiny)
 library(foreign)
-library(dlvis)
+library(dlvisR)
 
 shinyServer(function(input, output, session) {
   PCA <- "pca"
