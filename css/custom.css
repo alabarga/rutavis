@@ -12,11 +12,17 @@ body {
 
   }
     header h1 {
-      font-size: 1.2em;
+      font-size: 1.3em;
+      font-weight: 400;
       color: #505050;
       display: inline-block;
       vertical-align: middle;
     }
+      header h1 .little-r {
+        font-size: 0.8em;
+        font-weight: 700;
+        color: #a0a0a0;
+      }
     header nav {
       display: inline-block;
       vertical-align: middle;
