@@ -46,7 +46,7 @@ shinyServer(function(input, output, session) {
         else# if (input$left_type == PCA)
           new_model.pca(dataset(), class_col = as.numeric(input$class_pos), dimensions = input$left_dimensions, name = "")
 
-      plot.dlmodel(dlmodel)
+      plot(dlmodel)
     }
   })
   output$right_plot <- renderPlot({
@@ -59,7 +59,7 @@ shinyServer(function(input, output, session) {
         else# if (input$left_type == PCA)
           new_model.pca(dataset(), class_col = as.numeric(input$class_pos), dimensions = input$right_dimensions, name = "")
 
-      plot.dlmodel(dlmodel)
+      plot(dlmodel)
     }
   })
 
