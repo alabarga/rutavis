@@ -28,11 +28,11 @@ config <- list(
     #   format = "arff",
     #   class_col = -1
     # ),
-    # list(
-    #   name = "wdbc.arff",
-    #   format = "arff",
-    #   class_col = 1
-    # ),
+    list(
+      name = "wdbc.arff",
+      format = "arff",
+      class_col = 1
+    ),
     # list(
     #   name = "pima-indians-diabetes.data",
     #   format = "csv",
@@ -67,8 +67,8 @@ config <- list(
   ),
 
   activations = c(
-    "TanhWithDropout"
-    #"RectifierWithDropout"
+    "Tanh",
+    "RectifierWithDropout"
   ),
 
   epochs = c(
@@ -111,13 +111,14 @@ for (ds in config$datasets) {
         pngname <- paste0("experiments/out/", basename, ".png")
         cat(paste0(pngname, "\n"))
 
-        tryCatch({
-          themodel <- new_model.autoencoder(dataset, class_col, layer, activation, epoch_num, name)
+        if (!file.exists(pngname))
+          tryCatch({
+            themodel <- new_model.autoencoder(dataset, class_col, layer, activation, epoch_num, name)
 
-          png(pngname)
-          plot(themodel)
-          dev.off()
-        }, error = { cat("Couldn't train this autoencoder") })
+            png(pngname)
+            plot(themodel)
+            dev.off()
+          }, error = function(e) { cat("Couldn't train this autoencoder\n") })
       } # epochs
     } # activations
   } # layers
