@@ -1,5 +1,9 @@
-* {
-  font-family: Fira Sans, Lato, Open Sans, sans-serif !important;
+body, div {
+  font-family: 'Fira Sans', Fira Sans, Lato, Open Sans, sans-serif !important;
+}
+pre, code {
+  font-family: 'Source Code Pro', Source Code Pro, Ubuntu Mono, Lucida Console, monospace;
+  font-size: 0.9em;
 }
 
 body {
