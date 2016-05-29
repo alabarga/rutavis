@@ -14,6 +14,7 @@ plot3d <- function(model, classes, name) {
   #scatter3D(as.vector(features_ae[1]), as.vector(features_ae[2]), as.vector(features_ae[3]), colvar = as.numeric(unlist(dataset[class_col])))
 }
 
+#' @export
 plot.dlmodel <- function(dlmodel, dimensions) {
   if (missing(dimensions))
     dimensions <- ncol(dlmodel$model)
