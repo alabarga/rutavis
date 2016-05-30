@@ -20,7 +20,7 @@ Afterwards, you can install the [h2o package](https://cran.r-project.org/web/pac
 
 This package provides a web UI built using the [shiny package](https://cran.r-project.org/web/packages/shiny/). You can launch it via `dlvisR::start_gui()`.
 
-Alternatively, you can use the bundled functions `dlvisR::new_model()` and `dlvisR::plot.dlvisR()` to generate your visualizations. Here is an example:
+Alternatively, you can use the bundled functions `dlvisR::new_model()` and `dlvisR::plot.dlmodel()` to generate your visualizations. Here is an example:
 
 ~~~r
 library(dlvisR)
