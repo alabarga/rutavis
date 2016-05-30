@@ -6,26 +6,26 @@ title: About
 
 ### Introduction
 
-dlvis is aimed to ease the understanding of several behaviors in unsupervised deep learning methods via visualizations and representations. In its current state, it's capable of representing two and three-dimensional models built by autoencoders with a range of adjustable parameters, and compare these to a classic dimensionality reduction method, PCA.
+dlvisR is aimed to ease the understanding of several behaviors in unsupervised deep learning methods via visualizations and representations. In its current state, it's capable of representing two and three-dimensional models built by autoencoders with a range of adjustable parameters, and compare these to a classic dimensionality reduction method, PCA.
 
 ### Installation
 
-You can use [@hadley](https://github.com/hadley)'s [devtools](https://cran.r-project.org/web/packages/devtools/index.html) to install dlvis:
+You can use [@hadley](https://github.com/hadley)'s [devtools](https://cran.r-project.org/web/packages/devtools/index.html) to install dlvisR:
 
 ~~~r
-devtools::install_github("fdavidcl/dlvis")
+devtools::install_github("fdavidcl/dlvisr")
 ~~~
 
 Afterwards, you can install the [h2o package](https://cran.r-project.org/web/packages/h2o/index.html) via `install.packages("h2o")`, which will be needed for autoencoder support.
 
 ### Usage
 
-This package provides a web UI built using the [shiny package](https://cran.r-project.org/web/packages/shiny/). You can launch it via `dlvis::start_gui()`.
+This package provides a web UI built using the [shiny package](https://cran.r-project.org/web/packages/shiny/). You can launch it via `dlvisR::start_gui()`.
 
-Alternatively, you can use the bundled functions `dlvis::new_model()` and `dlvis::plot.dlvis()` to generate your visualizations. Here is an example:
+Alternatively, you can use the bundled functions `dlvisR::new_model()` and `dlvisR::plot.dlmodel()` to generate your visualizations. Here is an example:
 
 ~~~r
-library(dlvis)
+library(dlvisR)
 iris_model <- new_model(type = "autoencoder",
                         dataset = iris,
                         class_col = 5,
