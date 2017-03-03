@@ -3,7 +3,7 @@ new_model.pca <- function(dataset, class_col = length(dataset), dimensions, name
   inputs <- dataset[-class_col]
 
   if (!all(sapply(inputs, function(col) "numeric" %in% class(col))))
-    stop("dlvisR: Input columns must be numeric for PCA to work")
+    stop("rutavis: Input columns must be numeric for PCA to work")
 
   # Principal Components Analysis
   results <- stats::prcomp(dataset[-class_col], center = TRUE, scale = FALSE, ...)

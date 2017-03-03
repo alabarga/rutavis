@@ -1,7 +1,7 @@
 #' @export
 new_model.rbm <- function(dataset, class_col = length(dataset), epoch_num, num_cd, name) {
   if (!requireNamespace("darch", quietly = TRUE)) {
-    stop("dlvisR: Package 'darch' is not installed and is needed for Restricted Boltzmann Machine functionality")
+    stop("rutavis: Package 'darch' is not installed and is needed for Restricted Boltzmann Machine functionality")
   }
 
   # rbm <- newRBM(length(dataset) - 1, 2, batchSize = 1)

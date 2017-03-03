@@ -18,12 +18,12 @@ Afterwards, you can install the [h2o package](https://cran.r-project.org/web/pac
 
 ## Usage
 
-This package provides a web UI built using the [shiny package](https://cran.r-project.org/web/packages/shiny/). You can launch it via `dlvisR::start_gui()`.
+This package provides a web UI built using the [shiny package](https://cran.r-project.org/web/packages/shiny/). You can launch it via `rutavis::start_gui()`.
 
-Alternatively, you can use the bundled functions `dlvisR::new_model()` and `dlvisR::plot.dlmodel()` to generate your visualizations. Here is an example:
+Alternatively, you can use the bundled functions `rutavis::new_model()` and `rutavis::plot.dlmodel()` to generate your visualizations. Here is an example:
 
 ~~~r
-library(dlvisR)
+library(rutavis)
 iris_model <- new_model(type = "autoencoder",
                         dataset = iris,
                         class_col = 5,
