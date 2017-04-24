@@ -1,3 +1,5 @@
+"use strict";
+
 /*
 
 View constructor
@@ -40,6 +42,15 @@ window.addEventListener("load", function() {
 
 /*
 
+Task constructor
+
+*/
+var Task = function() {
+  
+};
+
+/*
+
 Learner constructor
 
 */
@@ -55,9 +66,7 @@ var Learner = function() {
   
   this.rounds = 0;
   this.nodeRounds = document.createElement("input");
-
-  
-}
+};
 
 /*
 
@@ -68,30 +77,30 @@ Visualization constructor
 const singleTemplate = `
       <div class="columns">
         <div class="column is-narrow">
-          <h1 class="title">Visualization settings</h1>
+          <h1 class="title">Visualization {index}</h1>
           
           <aside class="menu">
             <p class="menu-label">Data</p>
             <form>
               <div class="field">
-                <label for="datasetId" class="label">Current dataset</label>
+                <label for="datasetId{index}" class="label">Current dataset</label>
                 <p class="control">
-                  <output id="datasetId" class="shiny-text-output"></output>
+                  <output id="datasetId{index}" class="shiny-text-output"></output>
                 </p>
               </div>
               
               <div class="field">
-                <label for="taskData" class="button is-primary">Upload new dataset</label>
+                <label for="taskData{index}" class="button is-primary">Upload new dataset</label>
                 <p class="control">
-                  <input id="taskData" name="taskData" class="input is-hidden" type="file" />
+                  <input id="taskData{index}" name="taskData{index}" class="input is-hidden" type="file" />
                 </p>
               </div>
               
               <div class="field">
-                <label for="taskCl" class="label">Class attribute</label>
+                <label for="taskCl{index}" class="label">Class attribute</label>
                 <p class="control">
                   <div class="select">
-                    <select id="taskCl" name="taskCl"></select>
+                    <select id="taskCl{index}" name="taskCl{index}"></select>
                   </div>
                 </p>
               </div>
@@ -101,33 +110,33 @@ const singleTemplate = `
             <p class="menu-label">Learner</p>
             <form>
               <div class="field">
-                <label for="learnerCl" class="label">Type</label>
+                <label for="learnerCl{index}" class="label">Type</label>
                 <p class="control">
                   <div class="select">
-                    <select id="learnerCl" name="learnerCl"></select>
+                    <select id="learnerCl{index}" name="learnerCl{index}"></select>
                   </div>
                 </p>
               </div>
               <div class="field">
                 <span class="label">Network layer sizes</span>
                 <p class="control">
-                  <output id="learnerFirst"></output>
+                  <output id="learnerFirst{index}"></output>
                   <input type="number" class="input" min=1 value=2>
-                  <output id="learnerLast"></output>
+                  <output id="learnerLast{index}"></output>
                 </p>
               </div>
               <div class="field">
                 <span class="label">Activation type</span>
                 <p class="control">
                   <div class="select">
-                    <select id="learnerAct" name="learnerAct"></select>
+                    <select id="learnerAct{index}" name="learnerAct{index}"></select>
                   </div>
                 </p>
               </div>
               <div class="field">
                 <span class="label">Number of rounds (epochs)</span>
                 <p class="control">
-                  <input type="number" class="input" min=1 value=10 id="learnerRounds" name="learnerRounds">
+                  <input type="number" class="input" min=1 value=10 id="learnerRounds{index}" name="learnerRounds{index}">
                 </p>
               </div>
             </form>
@@ -139,15 +148,14 @@ const singleTemplate = `
 
         <div class="column">
           <figure class="highlight">
-            <div id="bigPlot" class="shiny-plot-output"></div>
+            <div id="bigPlot{index}" class="shiny-plot-output"></div>
           </figure>
           <pre id="console" class="shiny-text-output"></pre>
         </div>
       </div>
 `;
 
-var Visualization = function(task, learner) {
-  var viewNode = document.querySelector(".view-one");
+var Visualization = function(index, task, learner) {
   
   this.task = task;
   this.learner = learner;
@@ -155,17 +163,10 @@ var Visualization = function(task, learner) {
   this.mainNode = document.createElement("div");
   
   this.populate = function() {
-    this.mainNode.innerHTML = singleTemplate;
+    this.mainNode.innerHTML = singleTemplate.replace(/\{index\}/g, index + 1);
   };
 
   this.populate();
-
-  this.select = function() {
-    if (viewNode.hasChildNodes())
-      viewNode.removeChild(viewNode.lastChild);
-
-    viewnode.appendChild(this.mainNode);
-  }
 };
 
 /*
@@ -174,14 +175,61 @@ Visualization management
 
 */
 
-var visualizations = [];
+var _VisHandler = function() {
+  var visualizations = [];
+  var tabs = [];
+  var viewNode = document.querySelector(".view-one");
+  var plusNode = document.querySelector(".new-visualization");
+  var tabsNode = plusNode.parentNode;
+  
+  var select = function(index) {
+    if (index > -1 && index < visualizations.length) {
+      if (viewNode.hasChildNodes())
+        viewNode.removeChild(viewNode.lastChild);
 
-window.addEventListener("ready", function() {
-  var plus = document.querySelector(".new-visualization");
-  plus.addEventListener("click", function() {
-    var vis = new Visualization(new Task(), new Learner());
+      viewNode.appendChild(visualizations[index].mainNode);
+
+      var prev = tabsNode.querySelector(".is-active");
+      if (prev)
+        prev.classList.remove("is-active");
+      tabs[index].classList.add("is-active");
+    }
+  };
+  
+  var newTab = function(index) {
+    // <a class="nav-item is-tab is-active">
+    //   {index}
+    // </a>
+    var node = document.createElement("a");
+    node.classList.add("nav-item");
+    node.classList.add("is-tab");
+    node.textContent = index + 1;
+    node.addEventListener("click", (function() { select(index); }));
+    return node;
+  };
+
+  var push = function(vis) {
     visualizations.push(vis);
-    vis.select();
-  });
+    var tab = newTab(tabs.length);
+    tabs.push(tab);
+    tabsNode.insertBefore(tab, plusNode);
+  };
+
+  return {
+    add: function() {
+      push(new Visualization(visualizations.length, new Task(), new Learner()));
+      select(visualizations.length - 1);
+    }
+  };
+};
+
+
+window.addEventListener("load", function() {
+  var VisHandler = _VisHandler();
+  
+  var plusNode = document.querySelector(".new-visualization");
+  plusNode.addEventListener("click", function() {
+    VisHandler.add();
+  });  
 });
 
