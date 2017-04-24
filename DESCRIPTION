@@ -6,6 +6,7 @@ Description: What the package does (one paragraph).
 Depends:
     R (>= 3.1.0),
     foreign,
+    ruta,
     scatterplot3d,
     graphics,
     utils
