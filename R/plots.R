@@ -1,27 +1,31 @@
 #' @import graphics
 plot2d <- function(model, classes, name) {
   classes <- as.factor(unlist(classes))
-  graphics::plot(as.matrix(model), col = classes)
+  graphics::plot(model, col = classes)
   graphics::legend(7, 4.3, unique(classes), col=1:length(classes), pch=1)
 }
 
 #' @import scatterplot3d
 plot3d <- function(model, classes, name) {
   scatterplot3d::scatterplot3d(
-    as.matrix(model),
+    model,
     color = as.numeric(as.factor(unlist(classes)))
   )
-  #scatter3D(as.vector(features_ae[1]), as.vector(features_ae[2]), as.vector(features_ae[3]), colvar = as.numeric(unlist(dataset[class_col])))
 }
 
+#' @import ruta
 #' @export
-plot.dlmodel <- function(dlmodel, dimensions) {
-  if (missing(dimensions))
-    dimensions <- ncol(dlmodel$model)
+plot.rutaModel <- function(model, task, ...) {
+  deepF <- ruta::ruta.deepFeatures(model, task)
+  dimensions <- ncol(deepF)
 
-  if (dimensions == 2) {
-    plot2d(dlmodel$model, dlmodel$classes, dlmodel$name)
+  plotFunction <- if (dimensions == 2) {
+    plot2d
+  } else if (dimensions == 3) {
+    plot3d
   } else {
-    plot3d(dlmodel$model, dlmodel$classes, dlmodel$name)
+    stop("rutavis doesn't currently support more than 3 dimensions")
   }
+
+  plotFunction(deepF, task$data[, task$cl], task$id)
 }
