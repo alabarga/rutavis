@@ -1,74 +1,114 @@
 library(shiny)
 library(foreign)
-library(dlvisR)
+library(ruta)
+library(rutavis)
+
+# ta = ruta.makeUnsupervisedTask(
+#   id = paste0("task", 0),
+#   data = iris,
+#   cl = 5
+# )
+# ae = ruta.makeLearner("autoencoder", hidden = c(4, 2, 4))
+# md = train(ae, ta, epochs = 10)
 
 shinyServer(function(input, output, session) {
-  PCA <- "pca"
-  AUTOENCODER <- "autoencoder"
-  RBM <- "rbm"
+  ## Globals--------------------------------------------------------------------
+  values <- reactiveValues()
 
-  type_options <- list(PCA)
+  ## Visualizations ------------------------------------------------------------
+  visualizationId <- reactive({ input$visualizationId })
 
-  if ("h2o" %in% rownames(installed.packages()))
-    type_options <- c(type_options, AUTOENCODER)
-
-  if ("darch" %in% rownames(installed.packages()))
-    type_options <- c(type_options, RBM)
-
-  updateSelectInput(session, "left_type", choices = type_options, selected = type_options[[1]])
-  updateSelectInput(session, "right_type", choices = type_options, selected = type_options[[1]])
-
+  ## Task management -----------------------------------------------------------
   dataset <- reactive({
-    if (!is.null(input$filename)) {
-      datapath <- input$filename$datapath
+    if (!is.null(input$taskData)) {
+      datapath <- input$taskData$datapath
       read.arff(datapath)
-    } else {
-      NULL
     }
   })
 
   observe({
-    attributes <- 1:length(dataset())
-    names(attributes) <- paste(attributes, "-", names(dataset()))
-    updateSelectInput(session, "class_pos", choices = attributes)
-
-    updateSelectInput(session, "left_activation", choices = c("RectifierWithDropout", "Tanh"))
-    updateSelectInput(session, "right_activation", choices = c("RectifierWithDropout", "Tanh"))
-  })
-
-  output$left_plot <- renderPlot({
     if (!is.null(dataset())) {
-      layers <- sapply(1:input$left_layer_count, function(i) input[[paste0("left_layer", i)]])
-
-      dlmodel <-
-        if (input$left_type == AUTOENCODER)
-          new_model.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$left_activation, epoch_num = input$left_epochs, name = "")
-        else# if (input$left_type == PCA)
-          new_model.pca(dataset(), class_col = as.numeric(input$class_pos), dimensions = input$left_dimensions, name = "")
-
-      plot(dlmodel)
-    }
-  })
-  output$right_plot <- renderPlot({
-    if (!is.null(dataset())) {
-      layers <- sapply(1:input$right_layer_count, function(i) input[[paste0("right_layer", i)]])
-
-      dlmodel <-
-        if (input$right_type == AUTOENCODER)
-          new_model.autoencoder(dataset(), class_col = as.numeric(input$class_pos), layer = layers, activation = input$right_activation, epoch_num = input$right_epochs, name = "")
-        else# if (input$left_type == PCA)
-          new_model.pca(dataset(), class_col = as.numeric(input$class_pos), dimensions = input$right_dimensions, name = "")
-
-      plot(dlmodel)
+      attributes <- 0:length(dataset())
+      names(attributes) <- c("Unlabeled dataset", paste0(1:length(dataset), ": ", names(dataset())))
+      updateSelectInput(session, "taskCl", choices = attributes)
     }
   })
 
-  output$left_first_layer <- renderText({ length(dataset()) - 1 })
-  output$left_last_layer <- renderText({ length(dataset()) - 1 })
-  output$right_first_layer <- renderText({ length(dataset()) - 1 })
-  output$right_last_layer <- renderText({ length(dataset()) - 1 })
+  task <- reactive({
+    if (!is.null(dataset())) {
+      cl = as.numeric(input$taskCl)
+      if (cl == 0) cl = NULL
 
-  output$dataset_name <- renderText({
-    if (is.null(input$filename)) "No dataset loaded" else input$filename$name
+      ruta.makeUnsupervisedTask(
+        id = input$taskData$name,
+        data = dataset(),
+        cl = cl
+      )
+    }
+  })
+
+  output$datasetId <- renderText({
+    validate(
+      need(!is.null(input$taskData), "No dataset loaded")
+    )
+    input$taskData$name
+  })
+
+  dataLength <- reactive({
+    if (!is.null(task())) {
+      length(task()$data) - ifelse(is.null(task()$cl), 0, 1)
+    }
+  })
+
+  output$learnerFirst <- renderPrint({ dataLength() })
+  output$learnerLast <- renderPrint({ dataLength() })
+
+  ## Learner management --------------------------------------------------------
+  PCA <- "pca"
+  AUTOENCODER <- "autoencoder"
+  RBM <- "rbm"
+
+  learners <- list(PCA, AUTOENCODER)
+
+  updateSelectInput(session, "learnerCl", choices = learners, selected = learners[[2]])
+
+  ## Activation
+  activations = c('none', 'relu', 'sigmoid', 'softrelu', 'tanh')
+  updateSelectInput(session, "learnerAct", choices = activations, selected = activations[[1]])
+
+  learner = reactive({
+    if (!is.null(dataLength())) {
+      act = input$learnerAct
+      if (act == 'none') act = NULL
+      ruta.makeLearner("autoencoder", hidden = c(dataLength(), 2, dataLength()), activation = act)
+    }
+  })
+
+  ## Training
+
+  model = reactive({
+    if (!is.null(learner()) && !is.null(task())) {
+      values[["log"]] <- capture.output({
+        md <- train(learner(), task(), epochs = as.numeric(input$learnerRounds))
+      })
+
+      md
+    }
+  })
+
+  ## Plots ---------------------------------------------------------------------
+  output$bigPlot <- renderPlot({
+    validate(
+      need(!is.null(task()), "Please select a dataset")
+    )
+    validate(
+      need(!is.null(model()), "Please configure a learner")
+    )
+    rutavis::plot.rutaModel(model(), task())
+  }, width = 600, height = 600)
+
+  ## Logs ----------------------------------------------------------------------
+  output$console <- renderPrint({
+    cat(paste(values[["log"]], collapse = "\n"))
   })
 })
