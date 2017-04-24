@@ -1,6 +1,6 @@
 #' @import foreign
 #' @export
-start_gui <- function() {
+ruta.gui <- function() {
   if (!requireNamespace("shiny", quietly = TRUE)) {
     stop("rutavis: Package 'shiny' is required to start the GUI")
   }
