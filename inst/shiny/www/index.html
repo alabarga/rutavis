@@ -1,118 +1,123 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>dlvisR - Visualization of Deep Learning Techniques</title>
-    <script src="shared/jquery.js" type="text/javascript"></script>
-    <script src="shared/shiny.js" type="text/javascript"></script>
-
+    <meta charset="utf-8">
+    <meta http-equiv="x-ua-compatible" content="ie=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-    <link rel="stylesheet" href="css/pure-min.css">
-    <link rel="stylesheet" href="css/grids-responsive-min.css">
+    <script src="shared/jquery.js" type="text/javascript"></script>
+    <script src="shared/shiny.js" type="text/javascript"></script>
+    
+    <title>ruta</title>
 
+    <meta name="application-name" content="ruta">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.4.0/css/bulma.min.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
     <link rel="stylesheet" type="text/css" href="shared/shiny.css"/>
-    <link rel="stylesheet" type="text/css" href="css/custom.css"/>
+    <link rel="stylesheet" href="css/main.css">
+
     <script src="js/main.js"></script>
   </head>
   <body>
-    <div class="pure-g">
-      <div class="pure-u-1-24 pure-u-md-1-6"></div>
-      <div class="pure-u-22-24 pure-u-md-2-3">
-        <div class="pure-g">
-          <!-- Content START! -->
-          <div class="pure-u-1-1">
-            <header>
-              <h1>dlvis<span class="little-r">R</span></h1>
-              <nav>
-                <a href="https://github.com/fdavidcl/dlvisr/blob/master/README.md">About</a>
-                <a href="https://github.com/fdavidcl/dlvisr/wiki">Documentation</a>
-                <a href="https://github.com/fdavidcl/dlvisr">Source code</a>
-                <!--<a href="#">CRAN</a>-->
-              </nav>
-            </header>
-          </div>
-          <div class="pure-u-1-1">
-            <form class="pure-form">
-              <p>
-                <span id="dataset_name" class="dataset-name shiny-text-output"></span>
-                <label for="class_pos">Class attribute</label>
-                <select id="class_pos" name="class_pos"></select>
-                <label for="filename" class="pure-button pure-button-primary">Upload new dataset</label>
-                <input type="file" name="filename" id="filename" hidden />
-              </p>
-            </form>
-          </div>
-          <div class="pure-u-1 pure-u-md-1-2">
-            <div id="left_plot" class="shiny-plot-output plot"></div>
-            <form class="active-pca plot-settings pure-form pure-form-aligned">
-              <div class="pure-control-group">
-                <label for="left_type">Type</label>
-                <select id="left_type" class="type-input" data-side="left" name="left_type"></select>
-              </div>
-              <div class="pca-settings">
-                <div class="pure-control-group">
-                  <label for="left_dimensions">Number of dimensions</label>
-                  <input type="number" id="left_dimensions" name="left_dimensions" class="medium-input" value=2 min=2 max=3></select>
-                </div>
-              </div>
-              <div class="autoencoder-settings">
-                <div class="pure-control-group">
-                  <label for="left_activation">Activation function</label>
-                  <select id="left_activation" name="left_activation"></select>
-                </div>
-                <div class="pure-control-group">
-                  <label for="left_epochs">Number of epochs</label>
-                  <input type="number" id="left_epochs" name="left_epochs" class="medium-input" value=1 min=1></select>
-                </div>
-                <div class="pure-control-group">
-                  <label>Layers</label>
-                  <span class="numeric-input shiny-text-output" id="left_first_layer"></span>
-                  <span class="layers" data-side="left"></span>
-                  <span class="numeric-input shiny-text-output" id="left_last_layer"></span>
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="pure-u-1 pure-u-md-1-2">
-            <div id="right_plot" class="shiny-plot-output plot"></div>
-            <form class="plot-settings pure-form pure-form-aligned">
-              <div class="pure-control-group">
-                <label for="right_type">Type</label>
-                <select id="right_type" class="type-input" data-side="right" name="right_type"></select>
-              </div>
-              <div class="pca-settings">
-                <div class="pure-control-group">
-                  <label for="right_dimensions">Number of dimensions</label>
-                  <input type="number" id="right_dimensions" name="right_dimensions" class="medium-input" value=2 min=2 max=3></select>
-                </div>
-              </div>
-              <div class="autoencoder-settings">
-                <div class="pure-control-group">
-                  <label for="right_activation">Activation function</label>
-                  <select id="right_activation" name="right_activation"></select>
-                </div>
-                <div class="pure-control-group">
-                  <label for="right_epochs">Number of epochs</label>
-                  <input type="number" id="right_epochs" name="right_epochs" class="medium-input" value=1 min=1></select>
-                </div>
-                <div class="pure-control-group">
-                  <label>Layers</label>
-                  <span class="numeric-input shiny-text-output" id="right_first_layer"></span>
-                  <span class="layers" data-side="right"></span>
-                  <span class="numeric-input shiny-text-output" id="right_last_layer"></span>
-                </div>
-              </div>
-            </form>
-          </div>
-          <div class="pure-u-1">
-            <footer>
-              dlvisR &copy; David Charte. All code is licensed under the <a href="http://fdavidcl.mit-license.org/">MIT License</a> unless otherwise stated.
-            </footer>
-          </div>
-          <!-- Content END! -->
+    <nav class="nav has-shadow">
+      <div class="nav-left">
+        <a class="nav-item ruta-logo">ruta</a>
+
+        <input type="hidden" value="1" id="visualizationId" name="visualizationId">
+        <a class="nav-item is-tab is-active">
+          1
+        </a>
+        <a class="nav-item is-tab">
+          2
+        </a>
+        <a class="new-visualization nav-item is-tab">
+          +
+        </a>
+      </div>
+
+      <div class="nav-right">
+        <div class="nav-item field has-addons">
+          <p class="control">
+            <a class="button enable-view enable-one">
+              <i class="fa fa-square"></i>
+            </a>
+          </p>
+          <p class="control">
+            <a class="button enable-view enable-grid">
+              <i class="fa fa-th-large"></i>
+            </a>
+          </p>
+          <p class="control">
+            <a class="button enable-view enable-list">
+              <i class="fa fa-th-list"></i>
+            </a>
+          </p>
         </div>
       </div>
-      <div class="pure-u-1-24 pure-u-md-1-6"></div>
+    </nav>
+
+    <div class="container is-fluid view view-one">
     </div>
+
+    <div class="container is-fluid view view-grid">
+      <div class="columns">
+        <div class="column">
+          <div class="card">
+            <div class="card-image">
+              <figure class="image is-16by9"></figure>
+            </div>
+            <div class="card-content">
+              <div class="media">
+                <div class="media-content">
+                  <p class="title is-4">wdbc.arff</p>
+                  <p class="subtitle is-6">autoencoder</p>
+                </div>
+              </div>
+
+              <div class="content">
+                Parámetros blablabla....
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="column">
+          <div class="card">
+            <div class="card-image">
+              <figure class="image is-16by9"></figure>
+            </div>
+            <div class="card-content">
+              <div class="media">
+                <div class="media-content">
+                  <p class="title is-4">wdbc.arff</p>
+                  <p class="subtitle is-6">autoencoder</p>
+                </div>
+              </div>
+
+              <div class="content">
+                Parámetros blablabla....
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="view view-list">
+      <section class="section">
+        <div class="container">
+          <div class="hero">
+            <h1 class="title">wdbc.arff</h1>
+            <h2 class="subtitle">autoencoder</h2>
+          </div>
+          <p>Parámetros...</p>
+          <figure class="image is-16by9"></figure>
+        </div>
+      </section>
+    </div>
+
+    <footer class="footer">
+      ruta, rutavis © David Charte. All code is licensed under the <a href="http://fdavidcl.mit-license.org/">MIT License</a> unless otherwise stated.
+    </footer>
   </body>
 </html>

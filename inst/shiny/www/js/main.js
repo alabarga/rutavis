@@ -1,107 +1,187 @@
-$(document).ready(function() {
+/*
 
-  var types = document.querySelectorAll(".type-input");
-  for (var t of types) {
-    t.onchange = function(e) {
-      Shiny.unbindAll();
+View constructor
 
-      var self = this;
-      ["active-pca", "active-autoencoder", "active-rbm"].forEach(function(name) {
-        self.parentNode.parentNode.classList.remove(name);
-      });
-      self.parentNode.parentNode.classList.add("active-" + self.value);
+*/
+var View = function(name) {
+  this.node = document.querySelector(".view-" + name);
+  this.enableButton = document.querySelector(".enable-" + name);
+  this.disableButtons = document.querySelectorAll(".enable-view:not(.enable-" + name + ")");
+  
+  this.enable = function() {
+    this.node.classList.remove("is-hidden");
+    this.enableButton.classList.add("is-active");
+    return this;
+  };
 
-      Shiny.bindAll();
-    };
+  this.disable = function() {
+    this.node.classList.add("is-hidden");
+    this.enableButton.classList.remove("is-active");
+    return this;
   }
 
-  // --------------------------------------------------------
-  // This will set all events for the layers form
-  var containers = document.querySelectorAll(".layers");
-
-  for (var c of containers) {
-    var cont = c;
-    var side = cont.getAttribute("data-side");
-    var middle_layer = document.createElement("input");
-    middle_layer.type = "number";
-    middle_layer.name = side + "_layer1";
-    middle_layer.value = 2;
-    middle_layer.min = 2;
-    middle_layer.max = 3;
-    middle_layer.classList.add("small-input");
-    middle_layer.classList.add("middle-layer");
-    middle_layer.classList.add("layer");
-
-    var add_button = document.createElement("input");
-    add_button.type = "button";
-    add_button.value = "+";
-    add_button.classList.add("pure-button");
-    add_button.classList.add("mini-button");
-    add_button.classList.add("pure-button-primary");
-    add_button.onclick = function() {
-      Shiny.unbindAll();
-      var side = this.parentNode.getAttribute("data-side");
-
-      // Add one before
-      var new_layer = document.createElement("input");
-      new_layer.type = "number";
-      new_layer.classList.add("small-input");
-      new_layer.classList.add("layer");
-      new_layer.value = 2;
-      this.parentNode.insertBefore(new_layer, this.parentNode.querySelector(".middle-layer"));
-
-      // Add one afterwards
-      var new_layer2 = document.createElement("input");
-      new_layer2.type = "number";
-      new_layer2.classList.add("small-input");
-      new_layer2.classList.add("layer");
-      new_layer2.value = 2;
-      this.parentNode.insertBefore(new_layer2, this.parentNode.querySelector(".middle-layer").nextSibling);
-
-      // Renumerate all layers
-      var layers = this.parentNode.querySelectorAll(".layer");
-      for (var i = 0; i < layers.length; i++) {
-        layers[i].name = side + "_layer" + (i + 1);
-      }
-
-      this.parentNode.querySelector(".layer-counter").value = 2 + 1*this.parentNode.querySelector(".layer-counter").value;
-      Shiny.bindAll();
-    };
-
-    var remove_button = document.createElement("input");
-    remove_button.type = "button";
-    remove_button.value = "\u2212"; // minus symbol
-    remove_button.classList.add("pure-button");
-    remove_button.classList.add("mini-button");
-    remove_button.classList.add("pure-button-primary");
-    remove_button.classList.add("pure-button-remove");
-    remove_button.onclick = function() {
-      if (this.parentNode.querySelector(".middle-layer").previousSibling) {
-        Shiny.unbindAll();
-        this.parentNode.removeChild(this.parentNode.querySelector(".middle-layer").previousSibling);
-        this.parentNode.removeChild(this.parentNode.querySelector(".middle-layer").nextSibling);
-
-        // Renumerate all layers
-        var layers = this.parentNode.querySelectorAll(".layer");
-        for (var i = 0; i < layers.length; i++) {
-          layers[i].name = this.parentNode.getAttribute("data-side") + "_layer" + (i + 1);
-        }
-
-        this.parentNode.querySelector(".layer-counter").value -= 2;
-        Shiny.bindAll();
-      }
-    }
-
-    var layer_counter = document.createElement("input");
-    layer_counter.type = "number";
-    layer_counter.style.display = "none";
-    layer_counter.classList.add("layer-counter");
-    layer_counter.name = side + "_layer_count";
-    layer_counter.value = 1;
-
-    cont.appendChild(middle_layer);
-    cont.appendChild(add_button);
-    cont.appendChild(remove_button);
-    cont.appendChild(layer_counter);
+  this.enableButton.addEventListener("click", this.enable.bind(this));
+  for (let button of this.disableButtons) {
+    button.addEventListener("click", this.disable.bind(this));
   }
+};
+
+// The interface has 3 views
+window.addEventListener("load", function() {
+  var views = [
+    new View("one"),
+    new View("grid"),
+    new View("list")
+  ];
+  views[0].enable();
+  views[1].disable();
+  views[2].disable();
 });
+
+/*
+
+Learner constructor
+
+*/
+var Learner = function() {
+  this.type = null;
+  this.nodeType = document.createElement("select");
+
+  this.activation = null;
+  this.nodeActivation = document.createElement("select");
+
+  this.hidden = null;
+  this.nodesHidden = [document.createElement("input")];
+  
+  this.rounds = 0;
+  this.nodeRounds = document.createElement("input");
+
+  
+}
+
+/*
+
+Visualization constructor
+
+*/
+
+const singleTemplate = `
+      <div class="columns">
+        <div class="column is-narrow">
+          <h1 class="title">Visualization settings</h1>
+          
+          <aside class="menu">
+            <p class="menu-label">Data</p>
+            <form>
+              <div class="field">
+                <label for="datasetId" class="label">Current dataset</label>
+                <p class="control">
+                  <output id="datasetId" class="shiny-text-output"></output>
+                </p>
+              </div>
+              
+              <div class="field">
+                <label for="taskData" class="button is-primary">Upload new dataset</label>
+                <p class="control">
+                  <input id="taskData" name="taskData" class="input is-hidden" type="file" />
+                </p>
+              </div>
+              
+              <div class="field">
+                <label for="taskCl" class="label">Class attribute</label>
+                <p class="control">
+                  <div class="select">
+                    <select id="taskCl" name="taskCl"></select>
+                  </div>
+                </p>
+              </div>
+            </form>
+
+            <hr>
+            <p class="menu-label">Learner</p>
+            <form>
+              <div class="field">
+                <label for="learnerCl" class="label">Type</label>
+                <p class="control">
+                  <div class="select">
+                    <select id="learnerCl" name="learnerCl"></select>
+                  </div>
+                </p>
+              </div>
+              <div class="field">
+                <span class="label">Network layer sizes</span>
+                <p class="control">
+                  <output id="learnerFirst"></output>
+                  <input type="number" class="input" min=1 value=2>
+                  <output id="learnerLast"></output>
+                </p>
+              </div>
+              <div class="field">
+                <span class="label">Activation type</span>
+                <p class="control">
+                  <div class="select">
+                    <select id="learnerAct" name="learnerAct"></select>
+                  </div>
+                </p>
+              </div>
+              <div class="field">
+                <span class="label">Number of rounds (epochs)</span>
+                <p class="control">
+                  <input type="number" class="input" min=1 value=10 id="learnerRounds" name="learnerRounds">
+                </p>
+              </div>
+            </form>
+
+            <hr>
+            <p class="menu-label">Visualization</p>
+          </aside>
+        </div>
+
+        <div class="column">
+          <figure class="highlight">
+            <div id="bigPlot" class="shiny-plot-output"></div>
+          </figure>
+          <pre id="console" class="shiny-text-output"></pre>
+        </div>
+      </div>
+`;
+
+var Visualization = function(task, learner) {
+  var viewNode = document.querySelector(".view-one");
+  
+  this.task = task;
+  this.learner = learner;
+
+  this.mainNode = document.createElement("div");
+  
+  this.populate = function() {
+    this.mainNode.innerHTML = singleTemplate;
+  };
+
+  this.populate();
+
+  this.select = function() {
+    if (viewNode.hasChildNodes())
+      viewNode.removeChild(viewNode.lastChild);
+
+    viewnode.appendChild(this.mainNode);
+  }
+};
+
+/*
+
+Visualization management
+
+*/
+
+var visualizations = [];
+
+window.addEventListener("ready", function() {
+  var plus = document.querySelector(".new-visualization");
+  plus.addEventListener("click", function() {
+    var vis = new Visualization(new Task(), new Learner());
+    visualizations.push(vis);
+    vis.select();
+  });
+});
+
