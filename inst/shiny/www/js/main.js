@@ -78,6 +78,7 @@ const singleTemplate = `
       <div class="columns">
         <div class="column is-narrow">
           <h1 class="title">Visualization {index}</h1>
+          <h1 id="title{index}" class="shiny-text-output">Emptiness :(</h1>
           
           <aside class="menu">
             <p class="menu-label">Data</p>
@@ -150,7 +151,7 @@ const singleTemplate = `
           <figure class="highlight">
             <div id="bigPlot{index}" class="shiny-plot-output"></div>
           </figure>
-          <pre id="console" class="shiny-text-output"></pre>
+          <pre id="console{index}" class="shiny-text-output"></pre>
         </div>
       </div>
 `;
@@ -167,6 +168,14 @@ var Visualization = function(index, task, learner) {
   };
 
   this.populate();
+
+  this.generate = function() {
+    // acumular parámetros de task, learner
+    var taskParams = 1, learnerParams = 0;
+    Shiny.onInputChange("visualization", {task: taskParams, learner: learnerParams});
+  }
+
+  this.generate();
 };
 
 /*
@@ -184,6 +193,8 @@ var _VisHandler = function() {
   
   var select = function(index) {
     if (index > -1 && index < visualizations.length) {
+      Shiny.unbindAll();
+      
       if (viewNode.hasChildNodes())
         viewNode.removeChild(viewNode.lastChild);
 
@@ -193,6 +204,9 @@ var _VisHandler = function() {
       if (prev)
         prev.classList.remove("is-active");
       tabs[index].classList.add("is-active");
+      
+      Shiny.onInputChange("currentVis", index + 1);
+      Shiny.bindAll();
     }
   };
   
@@ -217,7 +231,10 @@ var _VisHandler = function() {
 
   return {
     add: function() {
+      Shiny.unbindAll();
       push(new Visualization(visualizations.length, new Task(), new Learner()));
+      Shiny.onInputChange("visCount", visualizations.length);
+      Shiny.bindAll();
       select(visualizations.length - 1);
     }
   };
@@ -230,6 +247,13 @@ window.addEventListener("load", function() {
   var plusNode = document.querySelector(".new-visualization");
   plusNode.addEventListener("click", function() {
     VisHandler.add();
-  });  
+  });
+
+  Shiny.addCustomMessageHandler("bigPlot", function(plot) {
+    console.log(plot);
+    document.body.appendChild(plot);
+  });
+
+  
 });
 

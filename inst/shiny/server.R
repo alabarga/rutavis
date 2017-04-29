@@ -3,65 +3,97 @@ library(foreign)
 library(ruta)
 library(rutavis)
 
-# ta = ruta.makeUnsupervisedTask(
-#   id = paste0("task", 0),
-#   data = iris,
-#   cl = 5
-# )
-# ae = ruta.makeLearner("autoencoder", hidden = c(4, 2, 4))
-# md = train(ae, ta, epochs = 10)
+MAX_VIS <- 32
 
 shinyServer(function(input, output, session) {
-  ## Globals--------------------------------------------------------------------
-  values <- reactiveValues()
+  ## Globals -------------------------------------------------------------------
+  output$MAX_VIS <- renderPrint({ MAX_VIS })
 
-  ## Visualizations ------------------------------------------------------------
-  visualizationId <- reactive({ input$visualizationId })
+  react <- reactiveValues()
 
   ## Task management -----------------------------------------------------------
-  dataset <- reactive({
-    if (!is.null(input$taskData)) {
-      datapath <- input$taskData$datapath
-      read.arff(datapath)
-    }
-  })
+  dataset <- lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
 
-  observe({
-    if (!is.null(dataset())) {
-      attributes <- 0:length(dataset())
-      names(attributes) <- c("Unlabeled dataset", paste0(1:length(dataset), ": ", names(dataset())))
-      updateSelectInput(session, "taskCl", choices = attributes)
-    }
-  })
+    reactive({
+      taskData <- input[[paste0("taskData", i)]]
+      if (!is.null(taskData)) {
+        read.arff(taskData$datapath)
+      }
+    })
+  }))
 
-  task <- reactive({
-    if (!is.null(dataset())) {
-      cl = as.numeric(input$taskCl)
-      if (cl == 0) cl = NULL
+  title <- lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
+    output[[paste0("title", i)]] <- renderPrint({ cat("Visualization ", i) })
+  }))
 
-      ruta.makeUnsupervisedTask(
-        id = input$taskData$name,
-        data = dataset(),
-        cl = cl
+  datasetId <- lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
+
+    output[[paste0("datasetId", i)]] <- renderText({
+      taskData <- input[[paste0("taskData", i)]]
+      validate(
+        need(!is.null(taskData), "No dataset loaded")
       )
-    }
+      taskData$name
+    })
+  }))
+
+  for (i_ in 1:MAX_VIS) local({
+    i <- i_
+
+    observe({
+      ds <- dataset[[i]]
+
+      if (!is.null(ds())) {
+        attributes <- 0:length(ds())
+        names(attributes) <- c("Unlabeled dataset", paste0(1:length(ds()), ": ", names(ds())))
+        updateSelectInput(session, paste0("taskCl", i), choices = attributes)
+      }
+    })
   })
 
-  output$datasetId <- renderText({
-    validate(
-      need(!is.null(input$taskData), "No dataset loaded")
-    )
-    input$taskData$name
-  })
+  task <- lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
 
-  dataLength <- reactive({
-    if (!is.null(task())) {
-      length(task()$data) - ifelse(is.null(task()$cl), 0, 1)
-    }
-  })
+    reactive({
+      ds = dataset[[i]]
+      if (!is.null(ds())) {
+        cl = as.numeric(input[[paste0("taskCl", i)]])
+        if (cl == 0) cl = NULL
 
-  output$learnerFirst <- renderPrint({ dataLength() })
-  output$learnerLast <- renderPrint({ dataLength() })
+        ruta.makeUnsupervisedTask(
+          id = input[[paste0("taskData", i)]]$name,
+          data = ds(),
+          cl = cl
+        )
+      }
+    })
+  }))
+
+  dataLength <- lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
+
+    reactive({
+      task <- task[[i]]
+      if (!is.null(task())) {
+        length(task()$data) - ifelse(is.null(task()$cl), 0, 1)
+      }
+    })
+  }))
+
+  learnerFirst <- lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
+
+    output[[paste0("learnerFirst", i)]] <- renderPrint({ dataLength[[i]]() })
+  }))
+
+  learnerLast <- lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
+
+    output[[paste0("learnerLast", i)]] <- renderPrint({ dataLength[[i]]() })
+  }))
 
   ## Learner management --------------------------------------------------------
   PCA <- "pca"
@@ -69,46 +101,95 @@ shinyServer(function(input, output, session) {
   RBM <- "rbm"
 
   learners <- list(PCA, AUTOENCODER)
+  activations = c('none', 'relu', 'sigmoid', 'softrelu', 'tanh')
 
-  updateSelectInput(session, "learnerCl", choices = learners, selected = learners[[2]])
+  for (i_ in 1:MAX_VIS) local({
+    i <- i_
+    observe({
+      # this if statement allows the updateSelectInput to happen only when the visualization
+      # html nodes have just been created
+      if (!is.null(input$visCount) && input$visCount == i) {
+        updateSelectInput(session, paste0("learnerCl", i), choices = learners, selected = learners[[2]])
+        updateSelectInput(session, paste0("learnerAct", i), choices = activations, selected = activations[[1]])
+      }
+    })
+  })
 
   ## Activation
-  activations = c('none', 'relu', 'sigmoid', 'softrelu', 'tanh')
-  updateSelectInput(session, "learnerAct", choices = activations, selected = activations[[1]])
 
-  learner = reactive({
-    if (!is.null(dataLength())) {
-      act = input$learnerAct
-      if (act == 'none') act = NULL
-      ruta.makeLearner("autoencoder", hidden = c(dataLength(), 2, dataLength()), activation = act)
-    }
-  })
+  learner = lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
+
+    reactive({
+      if (!is.null(dataLength[[i]]())) {
+        act = input[[paste0("learnerAct", i)]]
+        if (act == 'none') act = NULL
+        ruta.makeLearner("autoencoder", hidden = c(dataLength[[i]](), 2, dataLength[[i]]()), activation = act)
+      }
+    })
+  }))
 
   ## Training
 
-  model = reactive({
-    if (!is.null(learner()) && !is.null(task())) {
-      values[["log"]] <- capture.output({
-        md <- train(learner(), task(), epochs = as.numeric(input$learnerRounds))
-      })
+  model = lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
 
-      md
-    }
-  })
+    reactive({
+      if (!is.null(learner[[i]]()) && !is.null(task[[i]]())) {
+        react[[paste0("log", i)]] <- capture.output({
+          md <- train(learner[[i]](), task[[i]](), epochs = as.numeric(input[[paste0("learnerRounds", i)]]))
+        })
+
+        md
+      }
+    })
+  }))
 
   ## Plots ---------------------------------------------------------------------
-  output$bigPlot <- renderPlot({
-    validate(
-      need(!is.null(task()), "Please select a dataset")
-    )
-    validate(
-      need(!is.null(model()), "Please configure a learner")
-    )
-    rutavis::plot.rutaModel(model(), task())
-  }, width = 600, height = 600)
+  # observe({
+  #   output[[paste0("bigPlot", i())]] <- renderPlot({})
+  # })
+  # output[[paste0("bigPlot", i())]] <- renderPlot({ getPlot(meow, i()) }, width = 600, height = 600)
+
+
+  plot <- lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
+
+    output[[paste0("bigPlot", i)]] <- renderPlot({
+      validate(
+        need(!is.null(task[[i]]()), "Please select a dataset")
+      )
+      validate(
+        need(!is.null(model[[i]]()), "Please configure a learner")
+      )
+      rutavis::plot.rutaModel(model[[i]](), task[[i]]())
+    }, width = 600, height = 600)
+  }))
 
   ## Logs ----------------------------------------------------------------------
-  output$console <- renderPrint({
-    cat(paste(values[["log"]], collapse = "\n"))
-  })
+  console <- lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
+
+    output[[paste0("console", i)]] <- renderPrint({
+      cat(paste(react[[paste0("log", i)]], collapse = "\n"))
+    })
+  }))
+
+  ## Event test
+  # output$console1 <- renderPrint({ input$visCount })
+  # plots <- reactive({
+  #   lapply(1:as.numeric(input$visCount), function(i) {
+  #     my_i <- i
+  #     plotName <- paste0("bigPlot", my_i)
+  #     output[[plotName]] <- renderPlot({
+  #       validate(
+  #         need(!is.null(task()), "Please select a dataset")
+  #       )
+  #       validate(
+  #         need(!is.null(model()), "Please configure a learner")
+  #       )
+  #       rutavis::plot.rutaModel(model(), task())
+  #     }, width = 600, height = 600)
+  #   })
+  # })
 })
