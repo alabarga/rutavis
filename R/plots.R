@@ -1,8 +1,13 @@
 #' @import graphics
+#' @import plotly
 plot2d <- function(model, classes, name) {
   classes <- as.factor(unlist(classes))
-  graphics::plot(model, col = classes)
-  graphics::legend(7, 4.3, unique(classes), col=1:length(classes), pch=1)
+  #graphics::plot(model, col = classes)
+  #graphics::legend(7, 4.3, unique(classes), col=1:length(classes), pch=1)
+  mm <- as.data.frame(model)
+  plotly::plot_ly(
+    mm, x = mm[[1]], y = mm[[2]], color = classes, mode = "markers", type = "scatter"
+  )
 }
 
 #' @import scatterplot3d
