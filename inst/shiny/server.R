@@ -82,19 +82,6 @@ shinyServer(function(input, output, session) {
       }
     })
   }))
-
-  learnerFirst <- lapply(1:MAX_VIS, function(i_) local({
-    i <- i_
-
-    output[[paste0("learnerFirst", i)]] <- renderPrint({ dataLength[[i]]() })
-  }))
-
-  learnerLast <- lapply(1:MAX_VIS, function(i_) local({
-    i <- i_
-
-    output[[paste0("learnerLast", i)]] <- renderPrint({ dataLength[[i]]() })
-  }))
-
   ## Learner management --------------------------------------------------------
   PCA <- "pca"
   AUTOENCODER <- "autoencoder"
@@ -114,6 +101,19 @@ shinyServer(function(input, output, session) {
       }
     })
   })
+
+  learnerFirst <- lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
+
+    output[[paste0("learnerFirst", i)]] <- renderPrint({ dataLength[[i]]() })
+  }))
+
+  learnerLast <- lapply(1:MAX_VIS, function(i_) local({
+    i <- i_
+
+    output[[paste0("learnerLast", i)]] <- renderPrint({ dataLength[[i]]() })
+  }))
+
 
   ## Activation
 
@@ -146,16 +146,11 @@ shinyServer(function(input, output, session) {
   }))
 
   ## Plots ---------------------------------------------------------------------
-  # observe({
-  #   output[[paste0("bigPlot", i())]] <- renderPlot({})
-  # })
-  # output[[paste0("bigPlot", i())]] <- renderPlot({ getPlot(meow, i()) }, width = 600, height = 600)
-
 
   plot <- lapply(1:MAX_VIS, function(i_) local({
     i <- i_
 
-    output[[paste0("bigPlot", i)]] <- renderPlot({
+    output[[paste0("bigPlot", i)]] <- renderPlotly({
       validate(
         need(!is.null(task[[i]]()), "Please select a dataset")
       )
@@ -163,7 +158,7 @@ shinyServer(function(input, output, session) {
         need(!is.null(model[[i]]()), "Please configure a learner")
       )
       rutavis::plot.rutaModel(model[[i]](), task[[i]]())
-    }, width = 600, height = 600)
+    })
   }))
 
   ## Logs ----------------------------------------------------------------------
@@ -175,21 +170,4 @@ shinyServer(function(input, output, session) {
     })
   }))
 
-  ## Event test
-  # output$console1 <- renderPrint({ input$visCount })
-  # plots <- reactive({
-  #   lapply(1:as.numeric(input$visCount), function(i) {
-  #     my_i <- i
-  #     plotName <- paste0("bigPlot", my_i)
-  #     output[[plotName]] <- renderPlot({
-  #       validate(
-  #         need(!is.null(task()), "Please select a dataset")
-  #       )
-  #       validate(
-  #         need(!is.null(model()), "Please configure a learner")
-  #       )
-  #       rutavis::plot.rutaModel(model(), task())
-  #     }, width = 600, height = 600)
-  #   })
-  # })
 })

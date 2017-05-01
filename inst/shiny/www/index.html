@@ -20,8 +20,8 @@
     <script src="js/main.js"></script>
   </head>
   <body>
-    <nav class="nav has-shadow">
-      <div class="nav-left">
+    <nav class="nav">
+      <div class="nav-left numbered-tabs">
         <a class="nav-item ruta-logo">ruta</a>
 
         <a class="new-visualization nav-item is-tab">
@@ -31,6 +31,11 @@
 
       <div class="nav-right">
         <div class="nav-item field has-addons">
+          <p class="control">
+            <a class="button enable-view enable-start">
+              <i class="fa fa-home"></i>
+            </a>
+          </p>
           <p class="control">
             <a class="button enable-view enable-one">
               <i class="fa fa-square"></i>
@@ -50,64 +55,67 @@
       </div>
     </nav>
 
-    <div class="container is-fluid view view-one">
-    </div>
-
-    <div class="container is-fluid view view-grid">
+    <div class="container view view-start">
+      <div class="hero">
+        <div class="hero-body">
+          <h1 class="title">Welcome to Ruta!</h1>
+          <h2 class="subtitle">Please begin by selecting one of the options below</h2>
+        </div>
+      </div>
+      
       <div class="columns">
         <div class="column">
-          <div class="card">
-            <div class="card-image">
-              <figure class="image is-16by9"></figure>
-            </div>
+          <a class="card new-visualization">
             <div class="card-content">
               <div class="media">
+                <div class="media-left">
+                  <figure class="icon is-large is-centered">
+                    <i class="fa fa-plus"></i>
+                  </figure>
+                </div>
                 <div class="media-content">
-                  <p class="title is-4">wdbc.arff</p>
-                  <p class="subtitle is-6">autoencoder</p>
+                  <p class="title is-4">New visualization</p>
+                  <p class="subtitle is-6">Start a blank visualization environment</p>
                 </div>
               </div>
-
-              <div class="content">
-                Parámetros blablabla....
-              </div>
             </div>
-          </div>
+          </a>
         </div>
         <div class="column">
-          <div class="card">
-            <div class="card-image">
-              <figure class="image is-16by9"></figure>
-            </div>
+          <a class="card">
             <div class="card-content">
               <div class="media">
+                <div class="media-left">
+                  <figure class="icon is-large is-centered">
+                    <i class="fa fa-folder"></i>
+                  </figure>
+                </div>
                 <div class="media-content">
-                  <p class="title is-4">wdbc.arff</p>
-                  <p class="subtitle is-6">autoencoder</p>
+                  <p class="title is-4">Load example</p>
+                  <p class="subtitle is-6"></p>
                 </div>
               </div>
-
-              <div class="content">
-                Parámetros blablabla....
-              </div>
             </div>
-          </div>
+          </a>
         </div>
       </div>
     </div>
+    
+    <div class="container is-fluid view view-one">
+    </div>
 
-    <div class="view view-list">
+    <div class="view view-grid">
       <section class="section">
         <div class="container">
-          <div class="hero">
-            <h1 class="title">wdbc.arff</h1>
-            <h2 class="subtitle">autoencoder</h2>
+          <div class="columns">
+            <div class="column grid-column-0"></div>
+            <div class="column grid-column-1"></div>
           </div>
-          <p>Parámetros...</p>
-          <figure class="image is-16by9"></figure>
         </div>
       </section>
     </div>
+
+    <div class="view view-list"></div>
 
     <footer class="footer">
       ruta, rutavis © David Charte. All code is licensed under the <a href="http://fdavidcl.mit-license.org/">MIT License</a> unless otherwise stated.

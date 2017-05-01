@@ -6,6 +6,8 @@ View constructor
 
 */
 var View = function(name) {
+  this.enabled = false;
+  this.name = name;
   this.node = document.querySelector(".view-" + name);
   this.enableButton = document.querySelector(".enable-" + name);
   this.disableButtons = document.querySelectorAll(".enable-view:not(.enable-" + name + ")");
@@ -13,12 +15,18 @@ var View = function(name) {
   this.enable = function() {
     this.node.classList.remove("is-hidden");
     this.enableButton.classList.add("is-active");
+    this.enabled = true;
+    if (this.onenable)
+      this.onenable();
     return this;
   };
 
   this.disable = function() {
     this.node.classList.add("is-hidden");
     this.enableButton.classList.remove("is-active");
+    this.enabled = false;
+    if (this.ondisable)
+      this.ondisable();
     return this;
   }
 
@@ -27,18 +35,6 @@ var View = function(name) {
     button.addEventListener("click", this.disable.bind(this));
   }
 };
-
-// The interface has 3 views
-window.addEventListener("load", function() {
-  var views = [
-    new View("one"),
-    new View("grid"),
-    new View("list")
-  ];
-  views[0].enable();
-  views[1].disable();
-  views[2].disable();
-});
 
 /*
 
@@ -149,33 +145,112 @@ const singleTemplate = `
 
         <div class="column">
           <figure class="highlight">
-            <div id="bigPlot{index}" class="shiny-plot-output"></div>
+            {plotOutput}
           </figure>
           <pre id="console{index}" class="shiny-text-output"></pre>
         </div>
       </div>
 `;
 
+const gridTemplate = `
+          <div class="card">
+            <div class="card-image">
+              <figure class="image is-16by9">
+                {plotOutput}
+              </figure>
+            </div>
+            <div class="card-content">
+              <div class="media">
+                <div class="media-content">
+                  <p class="title is-4">{title}</p>
+                  <p class="subtitle is-6">{learnerType}</p>
+                </div>
+              </div>
+
+              <div class="content">
+                Parámetros blablabla....
+              </div>
+            </div>
+          </div>
+`;
+
+const listTemplate = `
+      <section class="section">
+        <div class="container">
+          <div class="hero">
+            <h1 class="title">{title}</h1>
+            <h2 class="subtitle">{learnerType}</h2>
+          </div>
+          <p>Parámetros...</p>
+          <figure class="image is-16by9">
+            {plotOutput}
+          </figure>
+        </div>
+      </section>
+`;
+
 var Visualization = function(index, task, learner) {
+
+  var templatify = function(template, params) {
+    for (var p in params) {
+      var val = params[p];
+      var rgx = new RegExp("\\{" + p + "\\}", "g");
+      console.log(rgx, val);
+      template = template.replace(rgx, val);
+    }
+
+    return template;
+  }
   
   this.task = task;
   this.learner = learner;
+  this.selected = false;
 
-  this.mainNode = document.createElement("div");
+  this.singleNode = document.createElement("div");
+  this.gridNode = document.createElement("div");
+  this.listNode = document.createElement("div");
+
+  this.container = function(node) {
+    var c = document.createElement("div");
+    c.classList.add("template-container");
+    c.setAttribute("data-id", node.id);
+    return c;
+  };
+  
+  this.plotNode = document.createElement("div");
+  this.plotNode.id = "bigPlot" + (index + 1);
+  this.plotNode.classList.add("plotly");
+  this.plotNode.classList.add("html-widget");
+  this.plotNode.classList.add("html-widget-output");
   
   this.populate = function() {
-    this.mainNode.innerHTML = singleTemplate.replace(/\{index\}/g, index + 1);
+    var params = {
+      "index": index + 1,
+      "plotOutput": this.container(this.plotNode).outerHTML
+    };
+    
+    this.singleNode.innerHTML = templatify(singleTemplate, params);
+    this.gridNode.innerHTML = templatify(gridTemplate, params);
+    this.listNode.innerHTML = templatify(listTemplate, params);
   };
 
   this.populate();
 
-  this.generate = function() {
-    // acumular parámetros de task, learner
-    var taskParams = 1, learnerParams = 0;
-    Shiny.onInputChange("visualization", {task: taskParams, learner: learnerParams});
-  }
+  //this.plotNode = this.singleNode.querySelector("#bigPlot" + index);
 
-  this.generate();
+  this.single = function() {
+    // error: this.plotNode es null aquí :(
+    this.singleNode.querySelector("[data-id=\"" + this.plotNode.id + "\"]").appendChild(this.plotNode);
+    return this.singleNode;
+  }
+  this.grid = function() {
+    this.gridNode.querySelector("[data-id=\"" + this.plotNode.id + "\"]").appendChild(this.plotNode);
+    return this.gridNode;
+  }
+  this.list = function() {
+    this.listNode.querySelector("[data-id=\"" + this.plotNode.id + "\"]").appendChild(this.plotNode);
+    return this.listNode;
+  }
 };
 
 /*
@@ -185,25 +260,76 @@ Visualization management
 */
 
 var _VisHandler = function() {
+  var views = {
+    "start": new View("start"),
+    "one": new View("one"),
+    "grid": new View("grid"),
+    "list": new View("list")
+  };
+  views["start"].enable();
+  views["one"].disable();
+  views["grid"].disable();
+  views["list"].disable();
+  
   var visualizations = [];
   var tabs = [];
-  var viewNode = document.querySelector(".view-one");
-  var plusNode = document.querySelector(".new-visualization");
-  var tabsNode = plusNode.parentNode;
+  var tabsNode = document.querySelector(".numbered-tabs");
+  var plusNode = tabsNode.querySelector(".new-visualization");
+
+  // Manage changing elements from view to view
+  // Elements need to be transported from one view to another, especially
+  // plot elements, so we do this instead of copying them
+  for (var name in views) {
+    var view = views[name];
+    if (name != "start") {
+      view.onenable = function() {
+        var column = false;
+        for (var vis of visualizations) {
+          if (this.name == "one") {
+            if (vis.selected) {
+              if (this.node.lastChild) {
+                this.node.removeChild(this.node.lastChild);
+              }
+              
+              this.node.appendChild(vis.single());
+            }
+          } else if (this.name == "grid") {
+            this.node.querySelector(".grid-column-" + Number(column)).appendChild(vis.grid());
+            column = !column;
+          } else {
+            this.node.appendChild(vis.list());
+          }
+        }
+      };
+    }
+  }
+
+  views["one"].ondisable = function() {
+    try {
+      tabsNode.querySelector(".is-active").classList.remove("is-active");
+    } catch (ex) {}
+  };
   
   var select = function(index) {
     if (index > -1 && index < visualizations.length) {
       Shiny.unbindAll();
+
+      for (var name in views) {
+        views[name].disable();
+      }
+      views["one"].enable();
       
-      if (viewNode.hasChildNodes())
-        viewNode.removeChild(viewNode.lastChild);
+      if (views["one"].node.hasChildNodes())
+        views["one"].node.removeChild(views["one"].node.lastChild);
 
-      viewNode.appendChild(visualizations[index].mainNode);
-
+      views["one"].node.appendChild(visualizations[index].single());
+      
       var prev = tabsNode.querySelector(".is-active");
       if (prev)
         prev.classList.remove("is-active");
       tabs[index].classList.add("is-active");
+
+      visualizations[index].selected = true;
       
       Shiny.onInputChange("currentVis", index + 1);
       Shiny.bindAll();
@@ -235,6 +361,7 @@ var _VisHandler = function() {
       push(new Visualization(visualizations.length, new Task(), new Learner()));
       Shiny.onInputChange("visCount", visualizations.length);
       Shiny.bindAll();
+      
       select(visualizations.length - 1);
     }
   };
@@ -244,9 +371,11 @@ var _VisHandler = function() {
 window.addEventListener("load", function() {
   var VisHandler = _VisHandler();
   
-  var plusNode = document.querySelector(".new-visualization");
-  plusNode.addEventListener("click", function() {
-    VisHandler.add();
+  var plusNodes = document.querySelectorAll(".new-visualization");
+  plusNodes.forEach(function(p) {
+      p.addEventListener("click", function() {
+        VisHandler.add();
+      });
   });
 
   Shiny.addCustomMessageHandler("bigPlot", function(plot) {

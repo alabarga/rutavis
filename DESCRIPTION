@@ -9,6 +9,7 @@ Depends:
     ruta,
     scatterplot3d,
     graphics,
+    plotly,
     utils
 Suggests:
     h2o (>= 3.8),
