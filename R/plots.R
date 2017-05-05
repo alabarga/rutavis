@@ -1,20 +1,22 @@
-#' @import graphics
 #' @import plotly
-plot2d <- function(model, classes, name) {
+plot2d <- function(model, classes, name, ...) {
   classes <- as.factor(unlist(classes))
-  #graphics::plot(model, col = classes)
-  #graphics::legend(7, 4.3, unique(classes), col=1:length(classes), pch=1)
   mm <- as.data.frame(model)
   plotly::plot_ly(
-    mm, x = mm[[1]], y = mm[[2]], color = classes, mode = "markers", type = "scatter"
+    mm, x = mm[[1]], y = mm[[2]], color = classes,
+    mode = "markers", type = "scatter",
+    ...
   )
 }
 
-#' @import scatterplot3d
-plot3d <- function(model, classes, name) {
-  scatterplot3d::scatterplot3d(
-    model,
-    color = as.numeric(as.factor(unlist(classes)))
+#' @import plotly
+plot3d <- function(model, classes, name, ...) {
+  classes <- as.factor(unlist(classes))
+  mm <- as.data.frame(model)
+  plotly::plot_ly(
+    mm, x = mm[[1]], y = mm[[2]], z = mm[[3]],
+    color = classes, type = "scatter3d",
+    ...
   )
 }
 
@@ -32,5 +34,5 @@ plot.rutaModel <- function(model, task, ...) {
     stop("rutavis doesn't currently support more than 3 dimensions")
   }
 
-  plotFunction(deepF, task$data[, task$cl], task$id)
+  plotFunction(deepF, task$data[, task$cl], task$id, ...)
 }
