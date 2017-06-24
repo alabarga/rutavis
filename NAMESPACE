@@ -3,6 +3,5 @@
 S3method(plot,rutaModel)
 export(ruta.gui)
 import(foreign)
-import(graphics)
+import(plotly)
 import(ruta)
-import(scatterplot3d)

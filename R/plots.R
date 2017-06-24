@@ -20,6 +20,13 @@ plot3d <- function(model, classes, name, ...) {
   )
 }
 
+#' Plot the deep features of a learned model.
+#'
+#' Plot the deep features of a learned model.
+#'
+#' @param model A trained \code{rutaModel} object.
+#' @param task A \code{rutaTask} object.
+#' @param ... Additional parameters for the plotting library
 #' @import ruta
 #' @export
 plot.rutaModel <- function(model, task, ...) {
@@ -31,7 +38,7 @@ plot.rutaModel <- function(model, task, ...) {
   } else if (dimensions == 3) {
     plot3d
   } else {
-    stop("rutavis doesn't currently support more than 3 dimensions")
+    stop(paste0("rutavis doesn't currently support more than 3 dimensions (dimensions = ", dimensions, ")"))
   }
 
   plotFunction(deepF, task$data[, task$cl], task$id, ...)

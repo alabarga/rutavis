@@ -1,5 +1,24 @@
 "use strict";
 
+var templatify = function(template, params) {
+  for (var p in params) {
+    var val = params[p];
+    var rgx = new RegExp("\\{" + p + "\\}", "g");
+    console.log(rgx, val);
+    template = template.replace(rgx, val);
+  }
+
+  return template;
+}
+
+// very unsafe
+var getNode = function(htmlStr) {
+  var n = document.createElement("span");
+  n.innerHTML = htmlStr;
+  document.body.appendChild(n);
+  return n;
+}
+
 /*
 
 View constructor
@@ -50,18 +69,88 @@ var Task = function() {
 Learner constructor
 
 */
-var Learner = function() {
-  this.type = null;
-  this.nodeType = document.createElement("select");
 
-  this.activation = null;
-  this.nodeActivation = document.createElement("select");
+const paramTemplate = `
+              <div class="field">
+                <span class="label">{name}</span>
+                <p class="control">
+                  {input}
+                </p>
+              </div>
+`;
 
-  this.hidden = null;
-  this.nodesHidden = [document.createElement("input")];
+var Learner = function(index) {
+  this.parameters = [
+    {
+      "name": "Type",
+      "id": "Cl",
+      "class": "select",
+      "node": document.createElement("select"),
+    },
+    {
+      "name": "Activation",
+      "id": "Act",
+      "class": "select",
+      "node": document.createElement("select"),
+    },
+    {
+      "name": "Hidden",
+      "id": "MiddleLayer",
+      "class": "control",
+      "node": document.createElement("input"),
+    },
+    {
+      "name": "Rounds",
+      "id": "Rounds",
+      "class": "control",
+      "node": document.createElement("input"),
+    },
+    {
+      "name": "Optimizer",
+      "id": "Opt",
+      "class": "select",
+      "node": document.createElement("select"),
+    },
+    {
+      "name": "Learning rate",
+      "id": "Rate",
+      "class": "control",
+      "node": document.createElement("input"),
+    },
+  ]
+  this.callOnChange = [];
+  this.change = function(func) {
+    this.callOnChange.push(func);
+  }
+
+  for (var p in this.parameters) {
+    this.parameters[p]["node"].addEventListener("change", this.change.bind(this));
+  }
+
+  var myLearner = document.createElement("div");
+  for (var p in this.parameters) {
+    var f = document.createElement("div");
+    f.classList.add("field");
+    var l = document.createElement("span");
+    l.classList.add("label");
+    l.textContent = this.parameters[p]["name"];
+    f.appendChild(l);
+    var c = document.createElement("p");
+    c.classList.add(this.parameters[p]["class"]);
+    f.appendChild(c);
+    var n = this.parameters[p]["node"];
+    if (this.parameters[p]["class"] == "control")
+      n.classList.add("input");
+    n.id = "learner" + this.parameters[p]["id"] + (index + 1);
+    n.name = n.id;
+    c.appendChild(n);
+    
+    myLearner.appendChild(f);
+  }
   
-  this.rounds = 0;
-  this.nodeRounds = document.createElement("input");
+  this.node = function() {
+    return myLearner;
+  }
 };
 
 /*
@@ -70,11 +159,13 @@ Visualization constructor
 
 */
 
+
+
 const singleTemplate = `
       <div class="columns">
         <div class="column is-narrow">
-          <h1 class="title">Visualization {index}</h1>
-          <h1 id="title{index}" class="shiny-text-output">Emptiness :(</h1>
+          <h1 class="title">{title}</h1>
+          <!--h1 id="title{index}" class="shiny-text-output">Emptiness :(</h1-->
           
           <aside class="menu">
             <p class="menu-label">Data</p>
@@ -104,8 +195,8 @@ const singleTemplate = `
             </form>
 
             <hr>
-            <p class="menu-label">Learner</p>
-            <form>
+            <p class="menu-label">Learner and training</p>
+            <form id="learnerForm{index}"><!--
               <div class="field">
                 <label for="learnerCl{index}" class="label">Type</label>
                 <p class="control">
@@ -117,9 +208,9 @@ const singleTemplate = `
               <div class="field">
                 <span class="label">Network layer sizes</span>
                 <p class="control">
-                  <output id="learnerFirst{index}"></output>
-                  <input type="number" class="input" min=1 value=2>
-                  <output id="learnerLast{index}"></output>
+                  <output id="learnerFirst{index}" class="shiny-text-output"></output>
+                  <input name="middleLayer{index}" type="number" class="input" min=1 value=2>
+                  <output id="learnerLast{index}" class="shiny-text-output"></output>
                 </p>
               </div>
               <div class="field">
@@ -130,16 +221,46 @@ const singleTemplate = `
                   </div>
                 </p>
               </div>
+            </form>
+
+            <hr>
+            <p class="menu-label">Training</p>
+            <form>
+              <div class="field">
+                <span class="label">Optimizer</span>
+                <p class="control">
+                  <div class="select">
+                    <select id="learnerOpt{index}" name="learnerOpt{index}"></select>
+                  </div>
+                </p>
+              </div>
               <div class="field">
                 <span class="label">Number of rounds (epochs)</span>
                 <p class="control">
                   <input type="number" class="input" min=1 value=10 id="learnerRounds{index}" name="learnerRounds{index}">
                 </p>
               </div>
+              <div class="field">
+                <span class="label">Learning rate</span>
+                <p class="control">
+                  <input type="text" class="input" id="learnerRate{index}" name="learnerRate{index}">
+                </p>
+              </div>
+              -->
             </form>
 
             <hr>
             <p class="menu-label">Visualization</p>
+            <form>
+              <div class="field">
+                <span class="label">Type</span>
+                <p class="control">
+                  <div class="select">
+                    <select id="visType{index}" name="visType{index}"></select>
+                  </div>
+                </p>
+              </div>
+            </form>
           </aside>
         </div>
 
@@ -155,7 +276,7 @@ const singleTemplate = `
 const gridTemplate = `
           <div class="card">
             <div class="card-image">
-              <figure class="image is-16by9">
+              <figure class="image">
                 {plotOutput}
               </figure>
             </div>
@@ -167,8 +288,8 @@ const gridTemplate = `
                 </div>
               </div>
 
-              <div class="content">
-                Parámetros blablabla....
+              <div class="content" id="learnerForm{index}">
+                {learnerParams}
               </div>
             </div>
           </div>
@@ -181,8 +302,8 @@ const listTemplate = `
             <h1 class="title">{title}</h1>
             <h2 class="subtitle">{learnerType}</h2>
           </div>
-          <p>Parámetros...</p>
-          <figure class="image is-16by9">
+          <p id="learnerForm{index}">{learnerParams}</p>
+          <figure class="image">
             {plotOutput}
           </figure>
         </div>
@@ -191,16 +312,32 @@ const listTemplate = `
 
 var Visualization = function(index, task, learner) {
 
-  var templatify = function(template, params) {
-    for (var p in params) {
-      var val = params[p];
-      var rgx = new RegExp("\\{" + p + "\\}", "g");
-      console.log(rgx, val);
-      template = template.replace(rgx, val);
-    }
+  // available optimizers and parameters:
+  // mx.opt.sgd - learning.rate, momentum, wd, rescale.grad, clip_gradient, lr_scheduler
+  // mx.opt.rmsprop - learning.rate, gamma1, gamma2, wd, rescale.grad, clip_gradient, lr_scheduler
+  // mx.opt.adam - learning.rate, beta1, beta2, epsilon, wd, rescale.grad, clip_gradient, lr_scheduler
+  // mx.opt.adagrad - learning.rate, epsilon, wd, rescale.grad, clip_gradient, lr_scheduler
+  // mx.opt.adadelta - rho, epsilon, wd, rescale.grad, clip_gradient
+  // source: https://github.com/dmlc/mxnet/blob/master/R-package/R/optimizer.R
+  const learnerParams = {
+    "sgd": [
+      { "id": "learnerMomentum", "name": "Momentum" },
+    ],
+    "rmsprop": [
+      { "id": "learnerGamma1", "name": "Gamma 1" },
+      { "id": "learnerGamma2", "name": "Gamma 2" },
+    ],
+    "adam": [
+      { "id": "learnerBeta1", "name": "Beta 1" },
+      { "id": "learnerBeta2", "name": "Beta 2" },
+    ],
+    "adagrad": [
+    ],
+    "adadelta": [
+      { "id": "learnerRho", "name": "Rho" },
+    ],
+  };
 
-    return template;
-  }
   
   this.task = task;
   this.learner = learner;
@@ -224,14 +361,31 @@ var Visualization = function(index, task, learner) {
   this.plotNode.classList.add("html-widget-output");
   
   this.populate = function() {
+    /*var everyParamTemplate = "";
+    for (var algorithm in learnerParams) {
+      var lParams = learnerParams[algorithm];
+      everyParamTemplate += '<div class="show-' + algorithm + '">';
+      for (var p in lParams) {
+        var paramStr = templatify(paramTemplate, lParams[p]);
+        everyParamTemplate += paramStr;
+      }
+      everyParamTemplate += '</div>';
+    }*/
+
     var params = {
       "index": index + 1,
+      "title": "Visualization " + (index + 1),
       "plotOutput": this.container(this.plotNode).outerHTML
     };
+
+    /*var everyParam = templatify(everyParamTemplate, params);
+    params["learnerParams"] = everyParam;
+    */
     
     this.singleNode.innerHTML = templatify(singleTemplate, params);
     this.gridNode.innerHTML = templatify(gridTemplate, params);
     this.listNode.innerHTML = templatify(listTemplate, params);
+
   };
 
   this.populate();
@@ -241,14 +395,17 @@ var Visualization = function(index, task, learner) {
   this.single = function() {
     // error: this.plotNode es null aquí :(
     this.singleNode.querySelector("[data-id=\"" + this.plotNode.id + "\"]").appendChild(this.plotNode);
+    this.singleNode.querySelector("#learnerForm" + (index + 1)).appendChild(this.learner.node());
     return this.singleNode;
   }
   this.grid = function() {
     this.gridNode.querySelector("[data-id=\"" + this.plotNode.id + "\"]").appendChild(this.plotNode);
+    this.gridNode.querySelector("#learnerForm" + (index + 1)).appendChild(this.learner.node());
     return this.gridNode;
   }
   this.list = function() {
     this.listNode.querySelector("[data-id=\"" + this.plotNode.id + "\"]").appendChild(this.plotNode);
+    this.listNode.querySelector("#learnerForm" + (index + 1)).appendChild(this.learner.node());
     return this.listNode;
   }
 };
@@ -283,6 +440,7 @@ var _VisHandler = function() {
     var view = views[name];
     if (name != "start") {
       view.onenable = function() {
+        Shiny.unbindAll();
         var column = false;
         for (var vis of visualizations) {
           if (this.name == "one") {
@@ -300,6 +458,7 @@ var _VisHandler = function() {
             this.node.appendChild(vis.list());
           }
         }
+        Shiny.bindAll();
       };
     }
   }
@@ -358,7 +517,7 @@ var _VisHandler = function() {
   return {
     add: function() {
       Shiny.unbindAll();
-      push(new Visualization(visualizations.length, new Task(), new Learner()));
+      push(new Visualization(visualizations.length, new Task(), new Learner(visualizations.length)));
       Shiny.onInputChange("visCount", visualizations.length);
       Shiny.bindAll();
       

@@ -12,9 +12,7 @@ Depends:
     plotly,
     utils
 Suggests:
-    h2o (>= 3.8),
-    shiny (>= 0.13),
-    darch (>= 0.10)
+    shiny (>= 0.13)
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
