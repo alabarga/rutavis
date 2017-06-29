@@ -18,17 +18,4 @@ Afterwards, you can install the [h2o package](https://cran.r-project.org/web/pac
 
 ## Usage
 
-This package provides a web UI built using the [shiny package](https://cran.r-project.org/web/packages/shiny/). You can launch it via `rutavis::start_gui()`.
-
-Alternatively, you can use the bundled functions `rutavis::new_model()` and `rutavis::plot.dlmodel()` to generate your visualizations. Here is an example:
-
-~~~r
-library(rutavis)
-iris_model <- new_model(type = "autoencoder",
-                        dataset = iris,
-                        class_col = 5,
-                        layer = c(5, 2, 5),
-                        activation = "TanhWithDropout",
-                        epochs = 100)
-plot(iris_model)
-~~~
+This package provides a web UI built using the [shiny package](https://cran.r-project.org/web/packages/shiny/). You can launch it via `rutavis::ruta.gui()`.
