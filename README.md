@@ -14,7 +14,6 @@ You can use [@hadley](https://github.com/hadley)'s [devtools](https://cran.r-pro
 devtools::install_github("fdavidcl/rutavis")
 ~~~
 
-Afterwards, you can install the [h2o package](https://cran.r-project.org/web/packages/h2o/index.html) via `install.packages("h2o")`, which will be needed for autoencoder support.
 
 ## Usage
 
